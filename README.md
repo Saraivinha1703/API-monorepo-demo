@@ -151,6 +151,7 @@ To finish the configurations in this part of the project we are going to the `Pr
 ```
 This line is added to `SpaProxy` run your front-end automatically without you having to run it manually, so you just need to run one project.
 Now this file should look with something like this:
+
 `launchSettings.json`
 ```JSON
 {
