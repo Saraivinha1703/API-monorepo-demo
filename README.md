@@ -582,3 +582,132 @@ public interface IRepository<T>
     Task<bool> Save();
 }
 ```
+Now we are going to make a repository for each entity that we have, in this case we have two of them, `Books` and `Authors`, so create a `Data/Repositories` folder and inside it let's create two files, 
+`AuthorRepository.cs` and `BookRepository.cs`. We also need to make an interface for each of them, so they are forced to implement the CRUD methods. In order to do this, go to your `Interfaces` folder and 
+create a `IAuthorRepository.cs` and `IBookRepository.cs`, these two interfaces are going to be very simple, they will just inherit from `IRepository<T>` passing their specific type like this:
+
+`IAuthorRepository.cs`
+```C#
+using YourProjectName.Models;
+
+namespace YourProjectName.Interfaces;
+
+public interface IAuthorRepository : IRepository<Author> { }
+
+```
+`IBookRepository.cs`
+```C#
+using YourProjectName.Models;
+
+namespace YourProjectName.Interfaces;
+
+public interface IBookRepository : IRepository<Book> { }
+```
+
+Now both of our repositories are going to inherit their respective interfaces and implemate them:
+`AuthorRepository.cs`
+```C#
+using Microsoft.EntityFrameworkCore;
+using YourProjectName.Data.Context;
+using YourProjectName.Interfaces;
+using YourProjectName.Models;
+
+namespace YourProjectName.Data.Repositories;
+
+public class AuthorRepository : IAuthorRepository
+{
+    private readonly DataContext _context;
+
+    public AuthorRepository(DataContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ICollection<Author>> GetValuesAsync()
+    {
+        return await _context.Authors.OrderBy(a => a.Id).ToListAsync();
+    }
+
+    public async Task<Author> GetValueAsync(int id)
+    {
+        return await _context.Authors.Where(a => a.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> CreateAsync(Author obj)
+    {
+        _context.Authors.Add(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> UpdateAsync(Author obj)
+    {
+        _context.Authors.Update(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> DeleteAsync(Author obj)
+    {
+        _context.Authors.Remove(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> SaveAsync()
+    {
+        return await _context.SaveChangesAsync() > 0;
+    }
+}
+```
+`BookRepository.cs`
+```C#
+using Microsoft.EntityFrameworkCore;
+using YourProjectName.Data.Context;
+using YourProjectName.Interfaces;
+using YourProjectName.Models;
+
+namespace YourProjectName.Data.Repositories;
+
+public class BookRepository : IBookRepository
+{
+    private readonly DataContext _context;
+
+    public BookRepository(DataContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<ICollection<Book>> GetValuesAsync()
+    {
+        return await _context.Books.OrderBy(a => a.Id).ToListAsync();
+    }
+
+    public async Task<Book> GetValueAsync(int id)
+    {
+        return await _context.Books.Where(a => a.Id == id).FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> CreateAsync(Book obj)
+    {
+        _context.Books.Add(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> UpdateAsync(Book obj)
+    {
+        _context.Books.Update(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> DeleteAsync(Book obj)
+    {
+        _context.Books.Remove(obj);
+        return await SaveAsync();
+    }
+
+    public async Task<bool> SaveAsync()
+    {
+        return await _context.SaveChangesAsync() > 0;
+    }
+}
+```
+
+Now we have both of our repositories ready to fetch data. 🥳
