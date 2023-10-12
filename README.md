@@ -272,3 +272,312 @@ To test it out, go to your .Net API folder and run the following command:
 dotnet watch
 ```
 It should launch the API and open a tab in your browser, then the Proxy will run our front-end dev server and the React page should pop up with our .Net API response.
+
+# Starting Project
+To start this project we will make a simple Bookstore application. Create a `Models` folder and inside it create this two files: `Book.cs` and 
+`Author.cs`.
+
+To create properties we have two options, first is to declare some properties like this:
+```C#
+public string Name { get; set; } = null!;
+```
+Here we are basically saying that this value will not be null, but we can also go to the `YourProjectName.csproj` and change the Nullable tag from `enable` to 
+`disable`. The second option is what I'm going with.
+```HTML
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <!-- disabling the nullable tag (we can still declare nullable variables) -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+```
+## Making Models
+Now we are going to make some random properties just to have some data, you can make whatever you want, for this example, I'm going to make a bookstore and the models are going to have this properties:
+
+`Book.cs`
+```C#
+namespace YourProjectName.Models;
+
+public class Book
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int Rating { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public Author Author { get; set; }
+}
+```
+`Author.cs`
+```C#
+namespace YourProjectName.Models;
+
+public class Author
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public List<Book> Books { get; set; }
+}
+```
+
+## Making Data Context and Seed
+You can also make a static list with all the values you want to fetch, since the porpuse of this project is not how we store the data. 
+But I'm going to use SqlServer, and we can use it with help of some .Net librabries that does the query job for us. To use them we are going to run the two following commands:
+```
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+```
+and
+```
+dotnet add package Microsoft.EntityFrameworkCore.Design
+```
+With this two libraries installed, we are going to make the data context of our application, creating a `Data/Context` folder with a `DataContext.cs` file, that contains our entities and 
+custom options.
+
+`DataContext.cs`
+```C#
+using Microsoft.EntityFrameworkCore;
+using YourProjectName.Models;
+
+namespace YourProjectName.Data.Context;
+
+public class DataContext : DbContext
+{
+    public DataContext(DbContextOptions<DataContext> options)
+        : base(options) { }
+
+    public DbSet<Book> Books { get; set; }
+    public DbSet<Author> Authors { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        foreach (
+            var property in builder.Model
+                .GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?))
+        )
+        {
+            property.SetPrecision(18);
+            property.SetScale(2);
+        }
+    }
+}
+```
+In the `OnModelCreating` method we are going to set the precision of our `Price` decimal property, if we don´t do this, when we generate the migrations it will give us a warning. 
+In this method we can configure anything before entity framework does the binding between our entities and the tables in the database. 
+
+Now we are going to make the `Seed.cs` file in the `Data` folder and create some random data just to populate the database with data to fetch.
+
+`Seed.cs` (this data is not accurate)
+```C#
+using YourProjectName.Models;
+using YourProjectName.Data.Context;
+
+namespace YourProjectName.Data;
+
+public class Seed
+{
+    private readonly DataContext _context;
+
+    public Seed(DataContext context)
+    {
+        _context = context;
+    }
+
+    public void SeedDataContext()
+    {
+        Author georgeOrwell = new Author() { Name = "George Orwell", Age = 47, };
+        Author charlesDickens = new Author() { Name = "Charles Dickens", Age = 58, };
+        Author franzKafka = new Author() { Name = "Franz Kafka", Age = 41, };
+        if (!_context.Authors.Any())
+        {
+            List<Book> books = new List<Book>()
+            {
+                new Book()
+                {
+                    Name = "Animal Farm",
+                    Price = 10.5m,
+                    CreatedDate = new DateTime(1924, 2, 21),
+                    Rating = 5,
+                    Author = georgeOrwell
+                },
+                new Book()
+                {
+                    Name = "Nineteen Eighty-Four",
+                    Price = 20.55m,
+                    CreatedDate = new DateTime(1947, 8, 3),
+                    Rating = 3,
+                    Author = georgeOrwell
+                },
+                new Book()
+                {
+                    Name = "Burmese Days",
+                    Price = 2.82m,
+                    CreatedDate = new DateTime(1932, 10, 30),
+                    Rating = 4,
+                    Author = georgeOrwell
+                },
+                new Book()
+                {
+                    Name = "Homage to Catalonia",
+                    Price = 34.21m,
+                    CreatedDate = new DateTime(1938, 5, 18),
+                    Rating = 4,
+                    Author = georgeOrwell
+                },
+                new Book()
+                {
+                    Name = "The Pickwick Papers",
+                    Price = 23.64m,
+                    CreatedDate = new DateTime(1848, 1, 18),
+                    Rating = 4,
+                    Author = charlesDickens
+                },
+                new Book()
+                {
+                    Name = "Oliver Twist",
+                    Price = 12.14m,
+                    CreatedDate = new DateTime(1837, 6, 23),
+                    Rating = 2,
+                    Author = charlesDickens
+                },
+                new Book()
+                {
+                    Name = "Our Mutual Friend",
+                    Price = 4.45m,
+                    CreatedDate = new DateTime(1838, 1, 8),
+                    Rating = 1,
+                    Author = charlesDickens
+                },
+                new Book()
+                {
+                    Name = "The Trial",
+                    Price = 9.92m,
+                    Rating = 3,
+                    CreatedDate = new DateTime(1911, 4, 7),
+                    Author = franzKafka
+                },
+                new Book()
+                {
+                    Name = "Metamorphosis",
+                    CreatedDate = new DateTime(1914, 8, 22),
+                    Price = 9.80m,
+                    Rating = 4,
+                    Author = franzKafka
+                },
+            };
+            _context.AddRange(books);
+            _context.SaveChanges();
+        }
+    }
+}
+```
+Nothing that we did will work, if we don't add our data context and seed to our services in the `Program.cs` file. We need to add them because our classes have dependencies 
+and they are satisfied with the dependency injection made by .Net. To add them, go to the `Program.cs` file and put the following code lines before the app build.
+```C#
+builder.Services.AddTransient<Seed>();
+builder.Services.AddDbContext<DataContext>(
+    options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
+```
+We also have to add our database string connection, so our API can connect to some database to add and change the data. go to the `appsettings.json` in the root folder and 
+add `ConnectionStrings` section to this file, then a default connection to the section, now this file should look something like this: 
+```JSON
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YourServerName;Database=test;User Id=sa;Password=123456;TrustServerCertificate=True;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+**_NOTE:_** The string inside `GetConnectionString` method in `Program.cs` file, must match the name of the connection string in the `ConnectionStrings` section.
+
+After the app build we are going to add a if statement to check if we are passing a parameter to populate the database and run the method to do it.
+```C#
+var app = builder.Build();
+
+if (args.Length == 1 && args[0].ToLower() == "seeddata")
+    SeedData(app);
+
+void SeedData(IHost app)
+{
+    var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
+
+    using (var scope = scopedFactory?.CreateScope())
+    {
+        var service = scope?.ServiceProvider.GetService<Seed>();
+        service?.SeedDataContext();
+    }
+}
+```
+## Migrations
+Our application is Code-First which means that the database is made from our models and not Database-First which is the other way around. 
+Migrations are the commands to create our tables inside our database, to generate them we need the `dotnet ef` CLI, if you don't have it, run this command to install it globally:
+```
+dotnet tool install --global dotnet-ef
+```
+If it still not working, restart the computer. Now that you have or if you already have this tool, run this command to add the migrations:
+```
+dotnet ef migrations add migrationName
+```
+To update the database with our generated tables in the migrations we simply run this command that will get the server by our connection string set in the `Program.cs`:
+```
+dotnet ef database update
+```
+## Populating
+Now that we have a database and a seed, we are going to populate the database to have some data to work with, running this command:
+```
+dotnet run seeddata
+```
+To check the database I'm using `SQL Server Management Studio 19 (SSMS)` you can download it [here](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16#download-ssms). This is how the tables are supposed to look:
+<p align="center"> 
+<strong>Author's Table</strong>
+</p>
+
+<p align="center">
+  <img src="https://github.com/Saraivinha1703/MinimalAPIDemo/assets/62428073/f2130a1e-cbf8-46ed-9e6b-004a4c772ea7" />
+</p>
+
+<p align="center"> 
+<strong>Book's Table</strong>
+</p>
+
+<p align="center">
+  <img src="https://github.com/Saraivinha1703/MinimalAPIDemo/assets/62428073/d04d10d0-1644-425d-99ce-53069b965098" />
+</p>
+
+# Building Project
+Now that we have our basic project structure, we are going to create methods to fetch the data, services with business logic to handle the data and data transfer objects (DTO) to filter what is passed to the front-end or not.
+
+## Repository Pattern
+The repository pattern is a design pattern, they are techniques to make the project development easier, there are a lot of them, some are used more often than others, all of them have their use, but in the right context. 
+You can study the design patterns from this [site](https://refactoring.guru/design-patterns/catalog) and you should watch videos from youtube or some course from the specific design pattern that you are studying to make it easier. 
+Basically the repository pattern will handle the access to the data from the rest of the app, so if you want to execute anything that have something to do with the database information, you will have to use the repository for the entity that you want.
+
+Inside the root folder, create a `Interfaces` folder, that will contain the [interfaces](https://www.w3schools.com/cs/cs_interface.php) of our application, including the repositories interfaces. Create a `Repositories` folder inside the `Data` folder.
+First we are going to define the interfaces, they will demand to any class that inherits it to implement its methods. The first interface we are going to make inside the `Interfaces` folder is a generic interface, since we are going to have CRUD operations
+which is the same to any entity, it's going to make the methods implementation easier. 
+
+Create a `Interfaces/IRepository.cs` file and configure it with something like this:
+
+```C#
+namespace YourProjectName.Interfaces;
+
+public interface IRepository<T>
+    where T : class
+{
+    Task<ICollection<T>> GetValues();
+    Task<T> GetValue(int id);
+    Task<bool> Create(T obj);
+    Task<bool> Update(T obj);
+    Task<bool> Delete(T obj);
+    Task<bool> Save();
+}
+```
