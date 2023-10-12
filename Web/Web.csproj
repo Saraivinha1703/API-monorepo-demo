@@ -26,6 +26,11 @@
 
  <ItemGroup>
    <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="7.0.11" />
+   <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.12">
+     <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+     <PrivateAssets>all</PrivateAssets>
+   </PackageReference>
+   <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.12" />
  </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

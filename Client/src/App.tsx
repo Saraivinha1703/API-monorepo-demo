@@ -5,7 +5,7 @@ import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
-  const [text, setText] = useState(0);
+  const [text, setText] = useState('');
 
   useEffect(() => {
     fetch('/api/hello')
