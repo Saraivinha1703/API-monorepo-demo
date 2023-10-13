@@ -1,15 +1,17 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Web.Data;
 using Web.Data.Context;
 using Web.Data.Repositories;
 using Web.Interfaces;
+using Web.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<Seed>();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
-
 builder.Services.AddDbContext<DataContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -41,6 +43,16 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.MapGet("/api/hello", () => Results.Ok(new { Message = "Hello, world!" }));
+
+app.MapGet(
+    "/api/getBooks",
+    async (IBookRepository bookRepository, IMapper mapper) =>
+    {
+        List<Book> books = mapper.Map<List<Book>>(await bookRepository.GetValuesAsync());
+
+        return Results.Ok(books);
+    }
+);
 
 app.MapFallbackToFile("index.html");
 

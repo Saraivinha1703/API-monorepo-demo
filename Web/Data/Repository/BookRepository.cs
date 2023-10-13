@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Microsoft.EntityFrameworkCore;
 using Web.Data.Context;
 using Web.Interfaces;
@@ -16,12 +17,12 @@ public class BookRepository : IBookRepository
 
     public async Task<ICollection<Book>> GetValuesAsync()
     {
-        return await _context.Books.OrderBy(a => a.Id).ToListAsync();
+        return await _context.Books.OrderBy(b => b.Id).ToListAsync();
     }
 
     public async Task<Book> GetValueAsync(int id)
     {
-        return await _context.Books.Where(a => a.Id == id).FirstOrDefaultAsync();
+        return await _context.Books.Where(b => b.Id == id).FirstOrDefaultAsync();
     }
 
     public async Task<bool> CreateAsync(Book obj)
