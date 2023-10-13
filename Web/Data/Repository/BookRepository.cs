@@ -15,9 +15,9 @@ public class BookRepository : IBookRepository
         _context = context;
     }
 
-    public async Task<ICollection<Book>> GetValuesAsync()
+    public IQueryable<Book> GetValues()
     {
-        return await _context.Books.OrderBy(b => b.Id).ToListAsync();
+        return _context.Books.Include(b => b.Author).OrderBy(b => b.Id).AsQueryable();
     }
 
     public async Task<Book> GetValueAsync(int id)

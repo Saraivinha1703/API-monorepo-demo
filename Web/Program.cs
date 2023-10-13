@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Web.Data;
 using Web.Data.Context;
+using Web.Data.Dto;
 using Web.Data.Repositories;
 using Web.Interfaces;
 using Web.Models;
@@ -48,9 +49,23 @@ app.MapGet(
     "/api/getBooks",
     async (IBookRepository bookRepository, IMapper mapper) =>
     {
-        List<Book> books = mapper.Map<List<Book>>(await bookRepository.GetValuesAsync());
+        List<BookDto> books = await mapper
+            .ProjectTo<BookDto>(bookRepository.GetValues())
+            .ToListAsync();
 
         return Results.Ok(books);
+    }
+);
+
+app.MapGet(
+    "/api/getAuthors",
+    async (IAuthorRepository authorRepository, IMapper mapper) =>
+    {
+        List<Author> authors = await mapper
+            .ProjectTo<Author>(authorRepository.GetValues())
+            .ToListAsync();
+
+        return Results.Ok(authors);
     }
 );
 

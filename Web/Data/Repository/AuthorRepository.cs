@@ -14,9 +14,9 @@ public class AuthorRepository : IAuthorRepository
         _context = context;
     }
 
-    public async Task<ICollection<Author>> GetValuesAsync()
+    public IQueryable<Author> GetValues()
     {
-        return await _context.Authors.OrderBy(a => a.Id).ToListAsync();
+        return _context.Authors.OrderBy(a => a.Id).AsQueryable();
     }
 
     public async Task<Author> GetValueAsync(int id)

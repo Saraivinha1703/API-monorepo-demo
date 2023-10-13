@@ -6,5 +6,12 @@ namespace Web.Data.Context;
 
 public class MappingProfiles : Profile
 {
-    public MappingProfiles() { }
+    public MappingProfiles()
+    {
+        CreateMap<AuthorOnlyDto, Author>();
+        CreateMap<Author, Author>();
+        CreateMap<Author, AuthorOnlyDto>();
+        CreateMap<Book, BookDto>();
+        CreateMap<BookDto, Book>();
+    }
 }

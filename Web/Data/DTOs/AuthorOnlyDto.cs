@@ -1,4 +1,4 @@
-namespace Web.Data.Dto;
+namespace Web.Models;
 
 public class AuthorOnlyDto
 {
