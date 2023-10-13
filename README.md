@@ -222,6 +222,7 @@ export default defineConfig({
 ```
 To test if the data is being fetched correctly, go inside the `src/App.tsx` and add a `useEffect` hook, that runs every time the screen is refreshed *(just to test)* and a `useState` hook to display the fetched information. 
 Your file should look something like this: 
+
 `App.tsx`
 ```TSX
 import { useEffect, useState } from 'react';
@@ -605,109 +606,32 @@ public interface IBookRepository : IRepository<Book> { }
 ```
 
 Now both of our repositories are going to inherit their respective interfaces and implemate them:
+
 `AuthorRepository.cs`
 ```C#
-using Microsoft.EntityFrameworkCore;
-using YourProjectName.Data.Context;
-using YourProjectName.Interfaces;
-using YourProjectName.Models;
 
-namespace YourProjectName.Data.Repositories;
 
-public class AuthorRepository : IAuthorRepository
-{
-    private readonly DataContext _context;
-
-    public AuthorRepository(DataContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<ICollection<Author>> GetValuesAsync()
-    {
-        return await _context.Authors.OrderBy(a => a.Id).ToListAsync();
-    }
-
-    public async Task<Author> GetValueAsync(int id)
-    {
-        return await _context.Authors.Where(a => a.Id == id).FirstOrDefaultAsync();
-    }
-
-    public async Task<bool> CreateAsync(Author obj)
-    {
-        _context.Authors.Add(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> UpdateAsync(Author obj)
-    {
-        _context.Authors.Update(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> DeleteAsync(Author obj)
-    {
-        _context.Authors.Remove(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> SaveAsync()
-    {
-        return await _context.SaveChangesAsync() > 0;
-    }
-}
 ```
 `BookRepository.cs`
 ```C#
-using Microsoft.EntityFrameworkCore;
-using YourProjectName.Data.Context;
-using YourProjectName.Interfaces;
-using YourProjectName.Models;
 
-namespace YourProjectName.Data.Repositories;
 
-public class BookRepository : IBookRepository
-{
-    private readonly DataContext _context;
-
-    public BookRepository(DataContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<ICollection<Book>> GetValuesAsync()
-    {
-        return await _context.Books.OrderBy(a => a.Id).ToListAsync();
-    }
-
-    public async Task<Book> GetValueAsync(int id)
-    {
-        return await _context.Books.Where(a => a.Id == id).FirstOrDefaultAsync();
-    }
-
-    public async Task<bool> CreateAsync(Book obj)
-    {
-        _context.Books.Add(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> UpdateAsync(Book obj)
-    {
-        _context.Books.Update(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> DeleteAsync(Book obj)
-    {
-        _context.Books.Remove(obj);
-        return await SaveAsync();
-    }
-
-    public async Task<bool> SaveAsync()
-    {
-        return await _context.SaveChangesAsync() > 0;
-    }
-}
 ```
 
 Now we have both of our repositories ready to fetch data. 🥳
+
+Let's make an endpoint to return some data. Go to your `Program.cs` and add a `MapGet` method that returns a list with all the books in the database.
+
+`Program.cs`
+```C#
+app.MapGet(
+    "/api/getBooks",
+    async (IBookRepository bookRepository, IMapper mapper) =>
+    {
+        List<Book> books = mapper.Map<List<Book>>(await bookRepository.GetValuesAsync());
+
+        return Results.Ok(books);
+    }
+);
+```
+
