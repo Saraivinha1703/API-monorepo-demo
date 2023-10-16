@@ -8,10 +8,16 @@ public class MappingProfiles : Profile
 {
     public MappingProfiles()
     {
-        CreateMap<AuthorOnlyDto, Author>();
-        CreateMap<Author, Author>();
-        CreateMap<Author, AuthorOnlyDto>();
         CreateMap<Book, BookDto>();
         CreateMap<BookDto, Book>();
+
+        CreateMap<Book, BookOnlyDto>();
+        CreateMap<BookOnlyDto, Book>();
+
+        CreateMap<Author, AuthorDto>();
+        CreateMap<AuthorDto, Author>();
+
+        CreateMap<AuthorOnlyDto, Author>();
+        CreateMap<Author, AuthorOnlyDto>();
     }
 }

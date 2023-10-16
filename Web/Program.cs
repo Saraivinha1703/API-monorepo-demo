@@ -3,16 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Web.Data;
 using Web.Data.Context;
 using Web.Data.Dto;
-using Web.Data.Repositories;
-using Web.Interfaces;
 using Web.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<Seed>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddDbContext<DataContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -45,12 +41,15 @@ app.UseRouting();
 
 app.MapGet("/api/hello", () => Results.Ok(new { Message = "Hello, world!" }));
 
+//Books
 app.MapGet(
-    "/api/getBooks",
-    async (IBookRepository bookRepository, IMapper mapper) =>
+    "/api/getBooksAndAuthors",
+    async (DataContext context, IMapper mapper) =>
     {
         List<BookDto> books = await mapper
-            .ProjectTo<BookDto>(bookRepository.GetValues())
+            .ProjectTo<BookDto>(
+                context.Books.Include(b => b.Author).OrderBy(b => b.Id).AsQueryable()
+            )
             .ToListAsync();
 
         return Results.Ok(books);
@@ -58,16 +57,57 @@ app.MapGet(
 );
 
 app.MapGet(
-    "/api/getAuthors",
-    async (IAuthorRepository authorRepository, IMapper mapper) =>
+    "/api/getBooks",
+    async (DataContext context, IMapper mapper) =>
     {
-        List<Author> authors = await mapper
-            .ProjectTo<Author>(authorRepository.GetValues())
+        List<BookOnlyDto> books = await mapper
+            .ProjectTo<BookOnlyDto>(
+                context.Books.Include(b => b.Author).OrderBy(b => b.Id).AsQueryable()
+            )
+            .ToListAsync();
+
+        return Results.Ok(books);
+    }
+);
+
+//Create
+
+//Update
+
+//Delete
+
+
+//Authors
+app.MapGet(
+    "/api/getAuthorsAndBooks",
+    async (DataContext context, IMapper mapper) =>
+    {
+        List<AuthorDto> authors = await mapper
+            .ProjectTo<AuthorDto>(context.Authors.OrderBy(a => a.Id).AsQueryable())
             .ToListAsync();
 
         return Results.Ok(authors);
     }
 );
+
+app.MapGet(
+    "/api/getAuthors",
+    async (DataContext context, IMapper mapper) =>
+    {
+        List<AuthorOnlyDto> authors = await mapper
+            .ProjectTo<AuthorOnlyDto>(context.Authors.OrderBy(a => a.Id).AsQueryable())
+            .ToListAsync();
+
+        return Results.Ok(authors);
+    }
+);
+
+//Create
+
+//Update
+
+//Delete
+
 
 app.MapFallbackToFile("index.html");
 
