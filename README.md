@@ -558,80 +558,123 @@ To check the database I'm using `SQL Server Management Studio 19 (SSMS)` you can
 # Building Project
 Now that we have our basic project structure, we are going to create methods to fetch the data, services with business logic to handle the data and data transfer objects (DTO) to filter what is passed to the front-end or not.
 
-## Repository Pattern
-The repository pattern is a design pattern, they are techniques to make the project development easier, there are a lot of them, some are used more often than others, all of them have their use, but in the right context. 
-You can study the design patterns from this [site](https://refactoring.guru/design-patterns/catalog) and you should watch videos from youtube or some course from the specific design pattern that you are studying to make it easier. 
-Basically the repository pattern will handle the access to the data from the rest of the app, so if you want to execute anything that have something to do with the database information, you will have to use the repository for the entity that you want.
+## DTO (Data Transfer Object)
 
-Inside the root folder, create a `Interfaces` folder, that will contain the [interfaces](https://www.w3schools.com/cs/cs_interface.php) of our application, including the repositories interfaces. Create a `Repositories` folder inside the `Data` folder.
-First we are going to define the interfaces, they will demand to any class that inherits it to implement its methods. The first interface we are going to make inside the `Interfaces` folder is a generic interface, since we are going to have CRUD operations
-which is the same to any entity, it's going to make the methods implementation easier. 
+DTOs are objects that we use to filter the data that is fetched and passed to the client. We'll created some DTOs to fetch and send the data as we want. We are going to have four endpoint, two to fetch only books and authors and two to fetch books with authors and 
+authors with their books. So let's make this following files:
 
-Create a `Interfaces/IRepository.cs` file and configure it with something like this:
-
+`Data/DTO/BookDto.cs`
 ```C#
-namespace YourProjectName.Interfaces;
+using Web.Models;
 
-public interface IRepository<T>
-    where T : class
+namespace Web.Data.Dto;
+
+public class BookDto
 {
-    Task<ICollection<T>> GetValues();
-    Task<T> GetValue(int id);
-    Task<bool> Create(T obj);
-    Task<bool> Update(T obj);
-    Task<bool> Delete(T obj);
-    Task<bool> Save();
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int Rating { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public AuthorOnlyDto Author { get; set; }
 }
 ```
-Now we are going to make a repository for each entity that we have, in this case we have two of them, `Books` and `Authors`, so create a `Data/Repositories` folder and inside it let's create two files, 
-`AuthorRepository.cs` and `BookRepository.cs`. We also need to make an interface for each of them, so they are forced to implement the CRUD methods. In order to do this, go to your `Interfaces` folder and 
-create a `IAuthorRepository.cs` and `IBookRepository.cs`, these two interfaces are going to be very simple, they will just inherit from `IRepository<T>` passing their specific type like this:
-
-`IAuthorRepository.cs`
+`Data/DTO/BookOnlyDto.cs`
 ```C#
-using YourProjectName.Models;
+using Web.Models;
 
-namespace YourProjectName.Interfaces;
+namespace Web.Data.Dto;
 
-public interface IAuthorRepository : IRepository<Author> { }
+public class BookOnlyDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int Rating { get; set; }
+    public DateTime CreatedDate { get; set; }
+}
 
 ```
-`IBookRepository.cs`
+`Data/DTO/AuthorDto.cs`
 ```C#
-using YourProjectName.Models;
+namespace Web.Data.Dto;
 
-namespace YourProjectName.Interfaces;
-
-public interface IBookRepository : IRepository<Book> { }
-```
-
-Now both of our repositories are going to inherit their respective interfaces and implemate them:
-
-`AuthorRepository.cs`
-```C#
-
+public class AuthorDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public virtual List<BookOnlyDto> Books { get; set; }
+}
 
 ```
-`BookRepository.cs`
+`Data/DTO/AuthorOnlyDto.cs`
 ```C#
+namespace Web.Models;
 
+public class AuthorOnlyDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
 
 ```
-
-Now we have both of our repositories ready to fetch data. 🥳
-
 Let's make an endpoint to return some data. Go to your `Program.cs` and add a `MapGet` method that returns a list with all the books in the database.
 
 `Program.cs`
 ```C#
 app.MapGet(
-    "/api/getBooks",
-    async (IBookRepository bookRepository, IMapper mapper) =>
+    "/api/getBooksAndAuthors",
+    async (DataContext context, IMapper mapper) =>
     {
-        List<Book> books = mapper.Map<List<Book>>(await bookRepository.GetValuesAsync());
+        List<BookDto> books = await mapper
+            .ProjectTo<BookDto>(
+                context.Books.Include(b => b.Author).OrderBy(b => b.Id).AsQueryable()
+            )
+            .ToListAsync();
 
         return Results.Ok(books);
     }
 );
+
+app.MapGet(
+    "/api/getBooks",
+    async (DataContext context, IMapper mapper) =>
+    {
+        List<BookOnlyDto> books = await mapper
+            .ProjectTo<BookOnlyDto>(
+                context.Books.Include(b => b.Author).OrderBy(b => b.Id).AsQueryable()
+            )
+            .ToListAsync();
+
+        return Results.Ok(books);
+    }
+);
+
+app.MapGet(
+    "/api/getAuthorsAndBooks",
+    async (DataContext context, IMapper mapper) =>
+    {
+        List<AuthorDto> authors = await mapper
+            .ProjectTo<AuthorDto>(context.Authors.OrderBy(a => a.Id).AsQueryable())
+            .ToListAsync();
+
+        return Results.Ok(authors);
+    }
+);
+
+app.MapGet(
+    "/api/getAuthors",
+    async (DataContext context, IMapper mapper) =>
+    {
+        List<AuthorOnlyDto> authors = await mapper
+            .ProjectTo<AuthorOnlyDto>(context.Authors.OrderBy(a => a.Id).AsQueryable())
+            .ToListAsync();
+
+        return Results.Ok(authors);
+    }
+);
 ```
+*_NOTE:_* `ProjectTo` is an `AutoMapper` function that will project the object's data that we have to be searched in the database. 
 
