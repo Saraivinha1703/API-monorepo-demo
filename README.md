@@ -620,6 +620,8 @@ public class AuthorOnlyDto
 }
 
 ```
+
+## Read
 Let's make an endpoint to return some data. Go to your `Program.cs` and add a `MapGet` method that returns a list with all the books in the database.
 
 `Program.cs`
@@ -678,3 +680,43 @@ app.MapGet(
 ```
 *_NOTE:_* `ProjectTo` is an `AutoMapper` function that will project the object's data that we have to be searched in the database. 
 
+## Create
+Now, we'll make endpoints to create new registers inside our database.
+`Program.cs`
+```C#
+app.MapPost(
+    "api/newBook",
+    async (DataContext context, [FromBody] BookOnlyDto book, [FromQuery] int authorId) =>
+    {
+        Author author = await context.Authors.Where(a => a.Id == authorId).FirstOrDefaultAsync();
+        Book createBook = new Book()
+        {
+            Name = book.Name,
+            Price = book.Price,
+            Rating = book.Rating,
+            CreatedDate = book.CreatedDate,
+            Author = author,
+        };
+        await context.Books.AddAsync(createBook);
+        await SaveAsync(context);
+        return Results.Ok("Book Created Successfully!");
+    }
+);
+
+app.MapPost(
+    "api/newAuthor",
+    async (DataContext context, IMapper mapper, [FromBody] AuthorDto authorDto) =>
+    {
+        Author author = mapper.Map<Author>(authorDto);
+        await context.AddAsync(author);
+        await SaveAsync(context);
+    }
+);
+```
+## Update
+
+## Delete
+
+# Validating Data
+
+# Authentication and Authorization
