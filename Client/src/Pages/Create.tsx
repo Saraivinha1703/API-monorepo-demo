@@ -1,49 +1,16 @@
 import { useState } from 'react';
 import { CustomInput } from '../Components/CustomInput';
 import { CustomButton } from '../Components/CustomButton';
+import { BookFormContent } from '../Components/BookFormContent';
 
 type VariantType = 'book' | 'author';
-const BookFormContent = () => {
-  return (
-    <>
-      <h1 className="text-xl font-bold text-pastelGreen-500">New Book</h1>
-      <CustomInput.Root className="w-full">
-        <CustomInput.Label text="Name" />
-        <CustomInput.Content placeholder="Book's Name" />
-      </CustomInput.Root>
 
-      <CustomInput.Root className="w-full">
-        <CustomInput.Label text="Price" />
-        <CustomInput.Content
-          type="number"
-          placeholder="How much does it cost? (00.00)"
-        />
-      </CustomInput.Root>
-
-      <CustomInput.Root className="w-full">
-        <CustomInput.Label text="Rating" />
-        <CustomInput.Content
-          type="number"
-          placeholder="How good is it? (0-5)"
-        />
-      </CustomInput.Root>
-
-      <CustomInput.Root className="w-full">
-        <CustomInput.Label text="Created Date" />
-        <CustomInput.Content type="date" placeholder="yyyy-mm-dd" />
-      </CustomInput.Root>
-    </>
-  );
-};
 export function Create() {
   const [createType, setCreateType] = useState<VariantType>('book');
   const [authorBooksForms, setAuthorBooksForms] = useState<React.ReactNode[]>(
     []
   );
-  function handleNewAuthorBook() {
-    setAuthorBooksForms([...authorBooksForms, <BookFormContent />]);
-    console.log(authorBooksForms);
-  }
+
   return (
     <div className="h-full w-full flex flex-col items-center justify-start">
       <select
@@ -99,13 +66,22 @@ export function Create() {
               <CustomButton.Root
                 styleType="violet"
                 className="mt-6"
-                onClick={() => handleNewAuthorBook()}
+                onClick={() =>
+                  setAuthorBooksForms([
+                    ...authorBooksForms,
+                    <BookFormContent />,
+                  ])
+                }
               >
                 <CustomButton.Text text="Insert a Book + " />
               </CustomButton.Root>
             </div>
 
-            <CustomButton.Root styleType="pink" className="mt-6">
+            <CustomButton.Root
+              styleType="pink"
+              className="mt-6"
+              onClick={() => console.log('create new author with book(s)')}
+            >
               <CustomButton.Text text="Create" />
             </CustomButton.Root>
           </div>
