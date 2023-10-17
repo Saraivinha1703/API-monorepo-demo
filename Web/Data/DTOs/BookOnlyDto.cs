@@ -1,5 +1,3 @@
-using Web.Models;
-
 namespace Web.Data.Dto;
 
 public class BookOnlyDto

@@ -1,5 +1,7 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Web.Data;
 using Web.Data.Context;
 using Web.Data.Dto;
@@ -70,12 +72,72 @@ app.MapGet(
     }
 );
 
+app.MapGet(
+    "/api/getBook",
+    async (DataContext context, IMapper mapper, [FromQuery] int bookId) =>
+    {
+        BookDto book = await mapper
+            .ProjectTo<BookDto>(context.Books.Where(b => b.Id == bookId).AsQueryable())
+            .FirstOrDefaultAsync();
+
+        return Results.Ok(book);
+    }
+);
+
 //Create
+app.MapPost(
+    "api/newBook",
+    async (DataContext context, [FromBody] BookOnlyDto book, [FromQuery] int authorId) =>
+    {
+        Author author = await context.Authors.Where(a => a.Id == authorId).FirstOrDefaultAsync();
+        Book createBook =
+            new()
+            {
+                Name = book.Name,
+                Price = book.Price,
+                Rating = book.Rating,
+                CreatedDate = book.CreatedDate,
+                Author = author,
+            };
+        await context.Books.AddAsync(createBook);
+        await SaveAsync(context);
+        return Results.Ok("Book Created Successfully!");
+    }
+);
 
 //Update
+app.MapPut(
+    "api/updateBook",
+    async (DataContext context, [FromBody] BookOnlyDto book, [FromQuery] int authorId) =>
+    {
+        Author author = await context.Authors.Where(a => a.Id == authorId).FirstOrDefaultAsync();
+        Book updateBook =
+            new()
+            {
+                Id = book.Id,
+                Name = book.Name,
+                Price = book.Price,
+                Rating = book.Rating,
+                CreatedDate = book.CreatedDate,
+                Author = author,
+            };
+        context.Books.Update(updateBook);
+        await SaveAsync(context);
+        return Results.Ok("Book Updated Successfully!");
+    }
+);
 
 //Delete
-
+app.MapDelete(
+    "api/removeBook",
+    async (DataContext context, [FromQuery] int bookId) =>
+    {
+        Book book = await context.Books.Where(b => b.Id == bookId).FirstOrDefaultAsync();
+        context.Books.Remove(book);
+        await SaveAsync(context);
+        return Results.Ok("Book Removed Successfully!");
+    }
+);
 
 //Authors
 app.MapGet(
@@ -102,12 +164,58 @@ app.MapGet(
     }
 );
 
+app.MapGet(
+    "/api/getAuthor",
+    async (DataContext context, IMapper mapper, [FromQuery] int authorId) =>
+    {
+        AuthorDto author = await mapper
+            .ProjectTo<AuthorDto>(context.Authors.Where(b => b.Id == authorId).AsQueryable())
+            .FirstOrDefaultAsync();
+        return Results.Ok(author);
+    }
+);
+
 //Create
+app.MapPost(
+    "api/newAuthor",
+    async (DataContext context, IMapper mapper, [FromBody] AuthorDto authorDto) =>
+    {
+        Author author = mapper.Map<Author>(authorDto);
+        await context.AddAsync(author);
+        await SaveAsync(context);
+    }
+);
 
 //Update
+app.MapPut(
+    "api/updateAuthor",
+    async (DataContext context, IMapper mapper, [FromBody] AuthorDto authorDto) =>
+    {
+        Author author = mapper.Map<Author>(authorDto);
+        context.Update(author);
+        await SaveAsync(context);
+    }
+);
 
 //Delete
+app.MapDelete(
+    "api/removeAuthor",
+    async (DataContext context, [FromQuery] int authorId) =>
+    {
+        List<Book> books = await context.Books.Where(b => b.Author.Id == authorId).ToListAsync();
+        context.RemoveRange(books);
+        Author author = await context.Authors.Where(b => b.Id == authorId).FirstOrDefaultAsync();
+        context.Remove(author);
+        await SaveAsync(context);
+        return Results.Ok("Author Removed Successfully!");
+    }
+);
 
+async Task<bool> SaveAsync(DataContext context)
+{
+    int num = await context.SaveChangesAsync();
+    return num > 0;
+}
 
 app.MapFallbackToFile("index.html");
 
