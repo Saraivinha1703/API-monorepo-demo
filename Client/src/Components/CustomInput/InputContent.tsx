@@ -11,7 +11,7 @@ export const InputContent = (props: InputContentProps) => {
       placeholder={props.placeholder}
       type="number"
       className={clsx(
-        'border border-pastelGreen-500 rounded-xl h-8 shadow-md shadow-black/10 w-full',
+        'border border-pastelGreen-500 rounded-xl h-10 shadow-md shadow-black/10 w-full p-2 duration-150 hover:shadow-lg',
         props.className
       )}
       onChange={e => (props.onChange ? props.onChange(e) : null)}
