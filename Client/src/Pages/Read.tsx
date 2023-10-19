@@ -63,7 +63,7 @@ export function Read() {
         open={modalVisible}
         className="absolute top-0 w-full h-full bg-transparent"
       >
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center w-full h-full">
           <div className="flex flex-col items-center justify-start w-1/2 p-4 bg-white border-2 border-pastelGreen-300 rounded-xl max-h-[570px] overflow-scroll scrollbar-hide shadow-xl shadow-black/30">
             {Array.isArray(modalContent.current) ? (
               <Table.Root>
@@ -166,10 +166,11 @@ export function Read() {
                   <option value="api/getAuthor">Get Author By Id</option>
                 </select>
               </div>
-              <CustomInput.Root>
-                <CustomInput.Label text="Insert the Id" />
-                <div className="flex w-full justify-between mb-3 items-center">
+              <CustomInput.Root className="flex flex-col items-center mt-3">
+                <CustomInput.Label text="Insert the Id" className="w-1/3" />
+                <div className="flex w-1/3 justify-between mb-3 items-center">
                   <CustomInput.Content
+                    styleType="normal"
                     type="number"
                     placeholder="Id"
                     onChange={e =>

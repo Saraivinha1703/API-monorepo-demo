@@ -2,12 +2,10 @@ import clsx from 'clsx';
 
 type VariantStyle = 'green' | 'purple' | 'teal' | 'violet' | 'pink';
 
-type CustomButtonRootProps = {
-  children: React.ReactNode;
-  onClick?(
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ): React.MouseEventHandler<HTMLButtonElement> | undefined | void;
-  className?: string;
+type CustomButtonRootProps = React.DetailedHTMLProps<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+> & {
   styleType?: VariantStyle;
 };
 
