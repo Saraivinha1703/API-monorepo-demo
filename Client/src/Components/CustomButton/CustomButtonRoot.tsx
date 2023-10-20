@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-type VariantStyle = 'green' | 'purple' | 'teal' | 'violet' | 'pink';
+type VariantStyle = 'green' | 'purple' | 'teal' | 'violet' | 'pink' | 'red';
 
 type CustomButtonRootProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -19,6 +19,7 @@ export const CustomButtonRoot = (props: CustomButtonRootProps) => {
       'bg-gradient-to-r from-violet-200 to-violet-500 shadow-lg shadow-violet-500/50',
     pink: 'bg-gradient-to-r from-pink-200 to-pink-500 shadow-lg shadow-pink-500/50',
     teal: 'bg-gradient-to-r from-teal-200 to-teal-500 shadow-lg shadow-teal-500/50',
+    red: 'bg-gradient-to-r from-red-200 to-red-500 shadow-lg shadow-red-500/50',
   };
 
   return (
