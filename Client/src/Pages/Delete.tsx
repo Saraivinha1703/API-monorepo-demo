@@ -33,7 +33,7 @@ export function Delete() {
   return (
     <div className="h-full w-full flex flex-col items-center">
       <select
-        className="shadow shadow-black/30 w-1/3 h-8 rounded-xl bg-pastelGreen-300 mt-5"
+        className="shadow shadow-black/30 w-1/3 h-8 rounded-xl bg-red-300 mt-5"
         defaultValue={'book'}
         onChange={e => setDeleteType(e.target.value as DeleteTypeVariant)}
       >
@@ -45,7 +45,7 @@ export function Delete() {
           className="shadow-lg shadow-black/25 p-5 flex flex-col items-center gap-3 w-1/2 rounded-lg duration-200 hover:p-8
         "
         >
-          <h1 className="font-bold text-xl text-pastelGreen-500">Update</h1>
+          <h1 className="font-bold text-xl text-red-500/80">Delete</h1>
           {deleteType === 'book' ? (
             <CustomInput.Root>
               <CustomInput.Label text="Insert the Book's Id" />
