@@ -5,6 +5,8 @@ import { Home } from './Home';
 import { Navbar } from '../Components/Navbar';
 import { Update } from './Update';
 import { Delete } from './Delete';
+import { UpdateAuthorForm } from './forms/UpdateAuthor';
+import { UpdateBookForm } from './forms/UpdateBook';
 
 export function MainPage() {
   return (
@@ -20,6 +22,14 @@ export function MainPage() {
             <Route path="/Create" element={<Create />} />
             <Route path="/Update" element={<Update />} />
             <Route path="/Delete" element={<Delete />} />
+            <Route
+              path="/UpdateAuthorForm/:authorId"
+              element={<UpdateAuthorForm />}
+            />
+            <Route
+              path="/UpdateBookForm/:bookId"
+              element={<UpdateBookForm />}
+            />
           </Routes>
         </div>
       </BrowserRouter>
